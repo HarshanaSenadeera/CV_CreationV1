@@ -70,11 +70,11 @@ const CVPreview = ({ route }) => {
 
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Personal Information</Text>
-        <Text style={styles.sectionItem}>Date of Birth: {personalInfo.dateOfBirth}</Text>
-        <Text style={styles.sectionItem}>Gender: {personalInfo.gender}</Text>
-        <Text style={styles.sectionItem}>Civil Status: {personalInfo.civilStatus}</Text>
-        <Text style={styles.sectionItem}>ID Number: {personalInfo.idNumber}</Text>
-        <Text style={styles.sectionItem}>About: {personalInfo.about}</Text>
+        <Text style={styles.sectionItem}><Text style={styles.boldText}>Date of Birth:</Text> {personalInfo.dateOfBirth}</Text>
+        <Text style={styles.sectionItem}><Text style={styles.boldText}>Gender:</Text> {personalInfo.gender}</Text>
+        <Text style={styles.sectionItem}><Text style={styles.boldText}>Civil Status:</Text> {personalInfo.civilStatus}</Text>
+        <Text style={styles.sectionItem}><Text style={styles.boldText}>ID Number:</Text> {personalInfo.idNumber}</Text>
+        <Text style={styles.sectionItem}><Text style={styles.boldText}>About:</Text> {personalInfo.about}</Text>
       </View>
 
       <View style={styles.sectionContainer}>
@@ -157,6 +157,9 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 10,
+    backgroundColor:'purple',
+    color:'white',
+    textAlign:'center'
   },
   sectionItem: {
     fontSize: 16,
@@ -175,6 +178,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginVertical: 20,
+    
+  },
+  boldText: {
+    fontWeight: 'bold',
   },
 });
 
