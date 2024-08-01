@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, ScrollView, TouchableOpacity , Animated  } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'react-native-image-picker';
 
@@ -8,8 +8,9 @@ const Home = ({ navigation }) => {
   const [address, setAddress] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [gender, setGender] = useState('');
-  const [civilstatus, setCivilStatus] = useState('');
+  const [civilStatus, setCivilStatus] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [idNumber, setIdNumber] = useState('');
 
   const genders = ['Male', 'Female', 'Other'];
   const civil = ['Single', 'Married', 'Divorce'];
@@ -18,6 +19,7 @@ const Home = ({ navigation }) => {
   const [experiences, setExperiences] = useState([{ company: '', role: '' }]);
   const [educations, setEducations] = useState([{ school: '', year: '', description: '' }]);
   const [skills, setSkills] = useState([{ skill: '', proficiency: '' }]);
+  const [references, setReferences] = useState([{ name: '', address: '', phoneNumber: '' }]);
 
   const [imageUri, setImageUri] = useState(null);
 
@@ -55,6 +57,17 @@ const Home = ({ navigation }) => {
     setSkills([...skills, { skill: '', proficiency: '' }]);
   };
 
+  const handleReferenceChange = (index, field, value) => {
+    const newReferences = [...references];
+    newReferences[index][field] = value;
+    setReferences(newReferences);
+  };
+
+  const handleAddReference = () => {
+    setReferences([...references, { name: '', address: '', phoneNumber: '' }]);
+  };
+  
+
   const handleImagePicker = () => {
     ImagePicker.launchImageLibrary({ mediaType: 'photo' }, (response) => {
       if (response.didCancel) {
@@ -79,6 +92,27 @@ const Home = ({ navigation }) => {
        //@ts-ignore
       setImageUri(result.uri);
     }
+  };
+
+
+  const navigateToCVPreview = () => {
+    navigation.navigate('CVPreview', {
+      personalInfo: {
+        name,
+        address,
+        dateOfBirth,
+        gender,
+        civilStatus,
+        phoneNumber,
+        idNumber,
+        about,
+      },
+      experiences,
+      educations,
+      skills,
+      references,
+      imageUri,
+    });
   };
 
   return (
@@ -115,12 +149,20 @@ const Home = ({ navigation }) => {
           numberOfLines={4}
         />
 
-<TextInput
+        <TextInput
           style={styles.input}
           placeholder="Phone Number"
           value={phoneNumber}
           onChangeText={setPhoneNumber}
           keyboardType="phone-pad"
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="ID Number"
+          value={idNumber}
+          onChangeText={setIdNumber}
+        
         />
         <View style={styles.pickerContainer}>
           <Picker
@@ -138,8 +180,8 @@ const Home = ({ navigation }) => {
 
         <View style={styles.pickerContainer}>
         <Picker
-          selectedValue={civilstatus}
-          style={styles.input}
+          selectedValue={civilStatus}
+          style={styles.picker}
           onValueChange={(itemValue) => setCivilStatus(itemValue)}
         >
           <Picker.Item label="Select Civil status" value="" />
@@ -149,7 +191,7 @@ const Home = ({ navigation }) => {
         </Picker>
         </View>
 
-        <TouchableOpacity style={styles.imageButton} onPress={selectImage}>
+        <TouchableOpacity style={styles.addButton} onPress={selectImage}>
           <Text style={styles.imageButtonText}>Select Image</Text>
         </TouchableOpacity>
         {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
@@ -175,8 +217,8 @@ const Home = ({ navigation }) => {
           />
         </View>
       ))}
-      <TouchableOpacity  onPress={handleAddExperience}>
-        <Text style={styles.addButtonText}>+ Add Experience</Text>
+      <TouchableOpacity style={styles.addButton} onPress={handleAddExperience}>
+        <Text style={styles.addButtonText}>+ Add</Text>
       </TouchableOpacity>
       
 
@@ -207,8 +249,8 @@ const Home = ({ navigation }) => {
           />
         </View>
       ))}
-      <TouchableOpacity  onPress={handleAddEducation}>
-        <Text style={styles.addButtonText}>+ Add Education</Text>
+      <TouchableOpacity style={styles.addButton}  onPress={handleAddEducation}>
+        <Text style={styles.addButtonText}>+ Add </Text>
       </TouchableOpacity>
 
       {/* ---------------------------- Skills --------------------------------- */}
@@ -229,15 +271,44 @@ const Home = ({ navigation }) => {
           />
         </View>
       ))}
-      <TouchableOpacity  onPress={handleAddSkill}>
-        <Text style={styles.addButtonText}>+ Add Skill</Text>
+      <TouchableOpacity  style={styles.addButton} onPress={handleAddSkill}>
+        <Text style={styles.addButtonText}>+ Add </Text>
       </TouchableOpacity>
 
 
-
-      <TouchableOpacity style={styles.button} onPress={navigateToLogin}>
-        <Text style={styles.buttonText}>Save and Continue</Text>
+{/* ---------------------------- References --------------------------------- */}
+<Text style={styles.header}>REFERENCES</Text>
+      {references.map((reference, index) => (
+        <View key={index} style={styles.experienceContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Reference Name"
+            value={reference.name}
+            onChangeText={(text) => handleReferenceChange(index, 'name', text)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Address"
+            value={reference.address}
+            onChangeText={(text) => handleReferenceChange(index, 'address', text)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Phone Number"
+            value={reference.phoneNumber}
+            onChangeText={(text) => handleReferenceChange(index, 'phoneNumber', text)}
+            keyboardType="phone-pad"
+          />
+        </View>
+      ))}
+      <TouchableOpacity style={styles.addButton} onPress={handleAddReference}>
+        <Text style={styles.addButtonText}>+ Add Reference</Text>
       </TouchableOpacity>
+
+
+      <TouchableOpacity style={styles.button} onPress={navigateToCVPreview}>
+  <Text style={styles.buttonText}>Save and Continue</Text>
+</TouchableOpacity>
     </ScrollView>
   );
 };
@@ -264,7 +335,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
-    backgroundColor: '#13e004',
+    backgroundColor: '#f8b500',
     borderRadius: 25,
     paddingVertical: 15,
     alignItems: 'center',
@@ -304,15 +375,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   addButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: '#f8b500',
     borderRadius: 5,
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     alignItems: 'center',
     marginTop: 10,
   },
   addButtonText: {
-    color: '#13e004',
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
