@@ -1,66 +1,68 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image, ScrollView , PermissionsAndroid, Platform, ToastAndroid , Button} from 'react-native';
+import { StyleSheet, Text, View, Image, ScrollView, PermissionsAndroid, Platform, ToastAndroid, Button } from 'react-native';
 import { Pdf } from 'react-native-pdf-lib';
+import { Avatar } from 'react-native-paper';
 
 const CVPreview = ({ route }) => {
-  const { personalInfo, experiences, educations, skills, references, imageUri } = route.params;
+  const { personalInfo, experiences, educations, skills, references, imageUri, avatarUri } = route.params;
 
   const generatePDF = async () => {
-  try {
-    // Check for permissions (Android only)
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'Storage Permission',
-          message: 'App needs access to your storage to save the CV PDF',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
+    try {
+      // Check for permissions (Android only)
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          {
+            title: 'Storage Permission',
+            message: 'App needs access to your storage to save the CV PDF',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          ToastAndroid.show('Storage permission denied', ToastAndroid.SHORT);
+          return;
         }
-      );
-      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-        ToastAndroid.show('Storage permission denied', ToastAndroid.SHORT);
-        return;
       }
+
+      // Create PDF document
+      const pdfPath = await Pdf.create()
+        .addPage()
+        .setText(`Name: ${personalInfo.name}`)
+        .setText(`Address: ${personalInfo.address}`)
+        .setText(`Date of Birth: ${personalInfo.dateOfBirth}`)
+        .setText(`Gender: ${personalInfo.gender}`)
+        .setText(`Civil Status: ${personalInfo.civilStatus}`)
+        .setText(`Phone Number: ${personalInfo.phoneNumber}`)
+        .setText(`ID Number: ${personalInfo.idNumber}`)
+        .setText(`About: ${personalInfo.about}`)
+        .addPage()
+        .setText('Experience:')
+        .addText(experiences.map(exp => `Company: ${exp.company}, Role: ${exp.role}`).join('\n'))
+        .addPage()
+        .setText('Education:')
+        .addText(educations.map(edu => `School: ${edu.school}, Year: ${edu.year}, Description: ${edu.description}`).join('\n'))
+        .addPage()
+        .setText('Skills:')
+        .addText(skills.map(skill => `Skill: ${skill.skill}, Proficiency: ${skill.proficiency}`).join('\n'))
+        .addPage()
+        .setText('References:')
+        .addText(references.map(ref => `Name: ${ref.name}, Address: ${ref.address}, Phone Number: ${ref.phoneNumber}`).join('\n'))
+        .save();
+
+      ToastAndroid.show(`PDF saved to ${pdfPath}`, ToastAndroid.SHORT);
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      ToastAndroid.show('Failed to generate PDF', ToastAndroid.SHORT);
     }
-
-    // Create PDF document
-    const pdfPath = await Pdf.create()
-      .addPage()
-      .setText(`Name: ${personalInfo.name}`)
-      .setText(`Address: ${personalInfo.address}`)
-      .setText(`Date of Birth: ${personalInfo.dateOfBirth}`)
-      .setText(`Gender: ${personalInfo.gender}`)
-      .setText(`Civil Status: ${personalInfo.civilStatus}`)
-      .setText(`Phone Number: ${personalInfo.phoneNumber}`)
-      .setText(`ID Number: ${personalInfo.idNumber}`)
-      .setText(`About: ${personalInfo.about}`)
-      .addPage()
-      .setText('Experience:')
-      .addText(experiences.map(exp => `Company: ${exp.company}, Role: ${exp.role}`).join('\n'))
-      .addPage()
-      .setText('Education:')
-      .addText(educations.map(edu => `School: ${edu.school}, Year: ${edu.year}, Description: ${edu.description}`).join('\n'))
-      .addPage()
-      .setText('Skills:')
-      .addText(skills.map(skill => `Skill: ${skill.skill}, Proficiency: ${skill.proficiency}`).join('\n'))
-      .addPage()
-      .setText('References:')
-      .addText(references.map(ref => `Name: ${ref.name}, Address: ${ref.address}, Phone Number: ${ref.phoneNumber}`).join('\n'))
-      .save();
-
-    ToastAndroid.show(`PDF saved to ${pdfPath}`, ToastAndroid.SHORT);
-  } catch (error) {
-    console.error('Failed to generate PDF:', error);
-    ToastAndroid.show('Failed to generate PDF', ToastAndroid.SHORT);
-  }
-};
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {imageUri && <Image source={{ uri: imageUri }} style={styles.profileImage} />}
-      
+      <Avatar.Image size={100} source={require('../../assets/avetar.png')}  style={styles.avatarImage}/>
+
       <View style={styles.headerSection}>
         <Text style={styles.name}>{personalInfo.name}</Text>
         <Text style={styles.contactInfo}>{personalInfo.address}</Text>
@@ -121,7 +123,6 @@ const CVPreview = ({ route }) => {
       <View style={styles.buttonContainer}>
         <Button title="Generate PDF" onPress={generatePDF} />
       </View>
-     
     </ScrollView>
   );
 };
@@ -137,6 +138,14 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignSelf: 'center',
     marginBottom: 20,
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignSelf: 'center',
+    marginBottom: 20,
+   
   },
   headerSection: {
     alignItems: 'center',
@@ -157,9 +166,9 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 10,
-    backgroundColor:'purple',
-    color:'white',
-    textAlign:'center'
+    backgroundColor: 'purple',
+    color: 'white',
+    textAlign: 'center'
   },
   sectionItem: {
     fontSize: 16,
@@ -178,7 +187,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginVertical: 20,
-    
   },
   boldText: {
     fontWeight: 'bold',

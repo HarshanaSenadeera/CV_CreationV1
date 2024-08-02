@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, ScrollView, TouchableOpacity , Animated  } from 'react-native';
+import { StyleSheet, Text, View, TextInput, ScrollView, TouchableOpacity , Platform , Button } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import * as ImagePicker from 'react-native-image-picker';
+// import * as ImagePicker from 'react-native-image-picker';
+import { launchImageLibrary as _launchImageLibrary, launchCamera as _launchCamera } from 'react-native-image-picker';
+let launchImageLibrary = _launchImageLibrary;
+let launchCamera = _launchCamera;
 
 const Home = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -22,6 +25,7 @@ const Home = ({ navigation }) => {
   const [references, setReferences] = useState([{ name: '', address: '', phoneNumber: '' }]);
 
   const [imageUri, setImageUri] = useState(null);
+
 
   const navigateToLogin = () => {
     navigation.navigate('Login');
@@ -68,29 +72,64 @@ const Home = ({ navigation }) => {
   };
   
 
-  const handleImagePicker = () => {
-    ImagePicker.launchImageLibrary({ mediaType: 'photo' }, (response) => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.error) {
-        console.log('ImagePicker Error: ', response.error);
-      } else if (response.assets && response.assets.length > 0) {
-        setImageUri(response.assets[0].uri);
-      }
-    });
+  // const handleImagePicker = () => {
+  //   ImagePicker.launchImageLibrary({ mediaType: 'photo' }, (response) => {
+  //     if (response.didCancel) {
+  //       console.log('User cancelled image picker');
+  //     } else if (response.error) {
+  //       console.log('ImagePicker Error: ', response.error);
+  //     } else if (response.assets && response.assets.length > 0) {
+  //       setImageUri(response.assets[0].uri);
+  //     }
+  //   });
+  // };
+
+  // const selectImage = async () => {
+  //   let result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //     allowsEditing: true,
+  //     aspect: [4, 3],
+  //     quality: 1,
+  //   });
+
+  //   if (!result.canceled) {
+  //      //@ts-ignore
+  //     setImageUri(result.uri);
+  //   }
+  // };
+
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const openImagePicker = () => {
+    const options = {
+      mediaType: 'photo',
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+    };
+
+    launchImageLibrary(options, handleResponse);
   };
 
-  const selectImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  const handleCameraLaunch = () => {
+    const options = {
+      mediaType: 'photo',
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+    };
 
-    if (!result.canceled) {
-       //@ts-ignore
-      setImageUri(result.uri);
+    launchCamera(options, handleResponse);
+  };
+
+  const handleResponse = (response) => {
+    if (response.didCancel) {
+      console.log('User cancelled image picker');
+    } else if (response.error) {
+      console.log('Image picker error: ', response.error);
+    } else {
+      let imageUri = response.uri || response.assets?.[0]?.uri;
+      setSelectedImage(imageUri);
     }
   };
 
@@ -191,10 +230,21 @@ const Home = ({ navigation }) => {
         </Picker>
         </View>
 
-        <TouchableOpacity style={styles.addButton} onPress={selectImage}>
-          <Text style={styles.imageButtonText}>Select Image</Text>
-        </TouchableOpacity>
-        {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+      {selectedImage && (
+        <Image
+          source={{ uri: selectedImage }}
+          style={{ flex: 1 }}
+          resizeMode="contain"
+        />
+      )}
+      <View style={{ marginTop: 20 }}>
+        <Button title="Choose from Device" onPress={openImagePicker} />
+      </View>
+      <View style={{ marginTop: 20, marginBottom: 50 }}>
+        <Button title="Open Camera" onPress={handleCameraLaunch} />
+      </View>
+    </View>
         {/* Add more personal information fields as needed */}
       </View>
 
